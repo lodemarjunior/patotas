@@ -24,3 +24,9 @@
 .exempt-option{display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px}
 .exempt-option input{width:20px;height:20px;flex:none;accent-color:var(--blue)}
 #shareText{font:inherit;line-height:1.6;resize:vertical}
+
+/* Safari iOS: impedir que input date ultrapasse painéis e modais */
+.modal,.modal form,.modal .panel,.modal [id$="Fields"]{min-width:0;max-width:100%}
+.modal input[type="date"],.modal input[type="month"],.modal input[type="number"],.modal input[type="text"],.modal select{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;-webkit-appearance:none;appearance:none}
+.modal input[type="date"]::-webkit-date-and-time-value{text-align:left;min-width:0}
+.modal [hidden]{display:none!important}
