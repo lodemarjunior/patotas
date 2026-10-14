@@ -16,7 +16,7 @@ function migrate(){if(!db.monthMembers){db.monthMembers={};const keys=new Set([.
 migrate();
 db.deletedDues??={};
 db.freeDues??={};
-cfg().usesFines??=true;
+db.usesFines??=true;
 db.monthSettings??={};
 function cfg(m=db.month){return db.monthSettings[m]||{monthly:Number(db.monthly)||0,fineValue:Number(db.fineValue)||0,usesFines:db.usesFines!==false}}
 function fmtAmount(v){return (Number(v)||0).toFixed(2).replace('.',',')}
