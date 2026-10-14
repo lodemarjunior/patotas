@@ -39,3 +39,5 @@
 .exempt-save .action{margin-top:8px}
 
 .modal-head h2 .edit-name-icon{display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--blue);font-size:19px;cursor:pointer;vertical-align:middle;margin-left:6px;padding:4px}
+
+.header-actions{display:flex;gap:8px;align-items:center}
