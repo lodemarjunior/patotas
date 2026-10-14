@@ -1,5 +1,5 @@
-const CACHE = 'patotas-pwa-v16';
-const ASSETS = ['./', './index.html', './styles.css', './app.js', './styles.css?v=16', './app.js?v=16', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png'];
+const CACHE = 'patotas-pwa-v17';
+const ASSETS = ['./', './index.html', './styles.css', './app.js', './styles.css?v=17', './app.js?v=16', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png'];
 self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', event => { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', event => { if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
