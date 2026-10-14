@@ -19,3 +19,8 @@
 .action.small{padding:7px 10px;font-size:12px}
 .notice{font-size:12px;line-height:1.55;color:var(--muted);padding:12px 0}
 .modal-backdrop{z-index:30}
+
+.copy-selectors{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.exempt-option{display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px}
+.exempt-option input{width:20px;height:20px;flex:none;accent-color:var(--blue)}
+#shareText{font:inherit;line-height:1.6;resize:vertical}
