@@ -30,3 +30,10 @@
 .modal input[type="date"],.modal input[type="month"],.modal input[type="number"],.modal input[type="text"],.modal select{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;-webkit-appearance:none;appearance:none}
 .modal input[type="date"]::-webkit-date-and-time-value{text-align:left;min-width:0}
 .modal [hidden]{display:none!important}
+
+/* Fixed height for empty and populated native iOS date controls. */
+.modal input[type="date"]{height:48px;min-height:48px;max-height:48px;padding:10px 12px;line-height:26px;overflow:hidden;border-radius:10px}
+.modal input[type="date"]::-webkit-datetime-edit{display:flex;align-items:center;min-height:26px;padding:0;line-height:26px}
+.modal input[type="date"]::-webkit-date-and-time-value{min-height:26px;line-height:26px}
+.exempt-save{margin-top:8px}
+.exempt-save .action{margin-top:8px}
