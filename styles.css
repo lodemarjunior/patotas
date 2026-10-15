@@ -281,3 +281,60 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 #memberRows::-webkit-scrollbar{width:5px}
 #memberRows::-webkit-scrollbar-thumb{background:rgba(155,197,219,.35);border-radius:10px}
 @media(max-width:599px){#memberRows{max-height:max(210px,calc(100dvh - 360px));-webkit-overflow-scrolling:touch}}
+
+/* v24 — fixed viewport shell and a clean internal list scroller */
+html,body{height:100%;overflow:hidden}
+body{box-sizing:border-box}
+.app{
+ height:100dvh;
+ min-height:0;
+ max-height:100dvh;
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
+ padding-bottom:0;
+}
+.top{flex:0 0 auto}
+.app main{
+ flex:1 1 auto;
+ min-height:0;
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
+ padding-bottom:max(12px,env(safe-area-inset-bottom));
+}
+#view{
+ flex:1 1 auto;
+ min-height:0;
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
+}
+#view > .month-actions,
+#view > .share-dues-button,
+#view > .search{flex-shrink:0}
+#memberRows{
+ flex:1 1 auto;
+ min-height:0;
+ height:auto;
+ max-height:none!important;
+ overflow-x:hidden;
+ overflow-y:auto;
+ overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;
+ scrollbar-width:none;
+ padding-right:0;
+ padding-bottom:10px;
+ mask-image:linear-gradient(to bottom,#000 0%,#000 94%,transparent 100%);
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 94%,transparent 100%);
+}
+#memberRows::-webkit-scrollbar{display:none;width:0;height:0}
+@media(min-width:600px){
+ body{height:100dvh;padding:24px}
+ .app{height:calc(100dvh - 48px);max-height:calc(100dvh - 48px);min-height:0}
+}
+@media(max-width:599px){
+ body{padding:0}
+ .app{height:100dvh;max-height:100dvh}
+ #memberRows{max-height:none!important}
+}
