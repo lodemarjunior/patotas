@@ -262,3 +262,11 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 @media(max-width:599px){
  .modal-backdrop > .modal{max-height:92dvh;border-radius:23px 23px 0 0}
 }
+
+/* v22 — button spacing and native glass toast */
+.modal form > .action + .action,.modal form > .action + button.action{margin-left:10px}
+.modal form > .action{vertical-align:middle}
+.modal .actions{column-gap:12px;row-gap:10px}
+#toast{background:rgba(229,244,255,.91);color:#14283a;border:1px solid rgba(255,255,255,.84);box-shadow:0 12px 36px rgba(0,0,0,.2);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);white-space:normal;text-align:center;width:max-content;max-width:min(90vw,390px);font-weight:700}
+.theme-dark #toast{background:rgba(30,48,60,.93);color:#e5fbff;border-color:rgba(169,225,245,.34)}
+.action.copy-success,.action.outline.copy-success,.theme-dark .action.outline.copy-success{background:rgba(31,155,115,.2);border:1px solid rgba(74,213,156,.48);color:var(--green)}
