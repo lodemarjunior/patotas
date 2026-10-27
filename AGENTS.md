@@ -3,7 +3,7 @@
 Leia este arquivo antes de alterar o projeto. Estas orientações valem para todas as pastas do repositório, a menos que haja um AGENTS.md mais específico.
 
 ## Objetivo
-O Patotas é um PWA de controle de membros por competência mensal, mensalidades e multas. Hoje utiliza HTML, CSS e JavaScript sem backend, com dados no armazenamento local do navegador. Preserve dados existentes, compatibilidade com Safari/iOS e publicação via GitHub Pages.
+O Patotas é um PWA de controle de membros por competência mensal, mensalidades e multas. Front-end em HTML, CSS e JavaScript puro (módulos ES, sem build), publicado no GitHub Pages. Autenticação (e-mail+senha) e dados ficam no Supabase (Postgres + RLS); o app exige login e não guarda dados em localStorage (só a sessão do supabase-js). Preserve compatibilidade com Safari/iOS e publicação via GitHub Pages. Nunca versione a chave `service_role`.
 
 ## Política obrigatória de testes e regressões
 1. Para toda mudança de comportamento ou correção de bug, crie ou atualize **testes unitários** das regras afetadas e **testes de integração** dos fluxos envolvidos. Para mudanças puramente visuais, faça no mínimo teste de interface/responsividade e verifique que os fluxos continuam funcionando.
@@ -24,7 +24,8 @@ O Patotas é um PWA de controle de membros por competência mensal, mensalidades
 - Multa: quantidade inteira positiva, valor unitário > 0, data de aplicação ("Data da multa") e data de pagamento opcional e independente; múltiplas multas por membro; cadastro, edição e exclusão.
 - Configurações: mensalidade/multa padrão aceitam 0, mas lançamentos exigem valor > 0; "Usa multa" mostra ou oculta controles sem apagar multas existentes.
 - Compartilhar mensalidades: lista e status corretos para a data atual, incluindo mês vencido e isentos; clipboard e fallback.
-- Armazenamento local: recarregar a página não perde dados, mudanças no esquema não destroem dados anteriores e funções toleram multas antigas sem data de aplicação.
+- Persistência no Supabase: recarregar a página não perde dados, RLS isola cada usuário, migrations são aditivas (nunca destroem dados) e funções toleram multas antigas sem data de aplicação (`occurred_at` nulo).
+- Autenticação: login, criação de conta com confirmação de e-mail, recuperação de senha e sair; sem sessão o app mostra só o login.
 - Interface no Safari/iPhone: modais roláveis, campos de data sem transbordar bordas ou variar de altura, campos condicionais e tema claro/escuro.
 - Inicialização: página não pode ficar em branco devido a erro de sintaxe ou exceção; adicionar teste de fumaça que abra a aplicação e verifique a lista/controles básicos.
 

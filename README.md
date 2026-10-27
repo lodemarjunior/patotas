@@ -1,25 +1,39 @@
-# Patotas — PWA de demonstração
+# Patotas
 
-Site estático em HTML/CSS/JavaScript puro. Não há login, backend ou recebimento de pagamentos.
+PWA de controle de membros por competência mensal, mensalidades e multas. Front-end em HTML/CSS/JavaScript puro (módulos ES, sem build) e backend no [Supabase](https://supabase.com) (Auth por e-mail+senha e Postgres com RLS). É necessário fazer login; os dados ficam na conta do tesoureiro.
 
-## Publicar no GitHub Pages
+## Estrutura
 
-1. Crie um repositório chamado `patotas` no GitHub (público, se usar Pages gratuito).
-2. Faça upload **dos arquivos e da pasta `icons` de dentro deste ZIP**, preservando sua estrutura, na raiz do repositório (não envie o ZIP como único arquivo).
-3. Em **Settings > Pages**, escolha **Deploy from a branch** e selecione **main / (root)**. Salve.
-4. Após a publicação, abra `https://SEU-USUARIO.github.io/patotas/` no Safari.
-5. No Safari, toque em **Compartilhar > Adicionar à Tela de Início** e abra pelo ícone Patotas.
+- `index.html`, `app.js`, `styles.css`, `sw.js`: aplicação e PWA.
+- `src/core.js`: regras puras (datas, status, validações, texto de compartilhar).
+- `src/repo.js`: acesso aos dados via Supabase.
+- `config.js`: URL e chave **anon** do projeto (públicas; a proteção é RLS). Nunca coloque a `service_role`.
+- `supabase/migrations/`: esquema, RLS e funções (`copy_members`, `create_member`).
+- `vendor/supabase.js`: supabase-js (UMD) versionado no repo; atualizar com `npm run vendor`.
 
-## Testes
+## Configurar o Supabase (produção)
 
-- Setembro/2026 contém João; Outubro/2026 não contém João.
-- Carlos tem uma mensalidade atrasada em setembro; Ana pode aparecer como antecipada em outubro.
-- Clique em um membro ou mensalidade para abrir detalhes/registrar datas reais de pagamento.
-- Em Ajustes, exporte/importa um backup JSON. Nunca use 'Restaurar dados fictícios' com dados reais sem backup.
+1. Crie um projeto em supabase.com.
+2. Aplique as migrations: `npx supabase login`, `npx supabase link --project-ref SEU_REF`, `npx supabase db push`.
+3. Em **Authentication > Providers > Email**: mantenha "Confirm email" ligado e configure um SMTP próprio (o padrão tem limite baixo de e-mails).
+4. Em **Authentication > URL Configuration**: defina Site URL e Redirect URLs como `https://SEU-USUARIO.github.io/patotas/`.
+5. Preencha `SUPABASE_URL` e `SUPABASE_ANON_KEY` em `config.js` (Project Settings > API).
+6. Publique no GitHub Pages (Settings > Pages > main / root).
 
-## Limitações importantes
+## Desenvolvimento e testes
 
-- A instalação PWA exige hospedagem HTTPS ou localhost, não funciona corretamente pelo visualizador de arquivo HTML do iPhone.
-- Dados ficam no armazenamento deste dispositivo e perfil de navegador. Limpar dados do Safari ou excluir o PWA pode apagar registros; exporte backups periodicamente.
-- Offline funciona **após o primeiro acesso online e instalação/caching concluído**.
-- Apps PWA instalados e Safari podem ter armazenamentos separados dependendo do iOS. Não conte com sincronização.
+Requisitos: Node 20+, Docker (para o Supabase local).
+
+```
+npm install
+npx playwright install chromium webkit
+npm run supabase:start     # Postgres + Auth locais (aplica as migrations)
+npm run check              # verificação de sintaxe
+npm run test:unit          # regras puras e checagens estáticas
+npm run test:db            # RLS, constraints e repositório contra o Supabase local
+npm run test:e2e           # fluxos no Chromium (Pixel 7) e WebKit (iPhone 13); sobe scripts/serve.mjs
+```
+
+O E2E usa data fixa (15/10/2026) e aponta o app para o Supabase local sem alterar `config.js`; e-mails de confirmação são lidos do Mailpit local (porta 54324). Dica: para economizar imagens Docker, `npx supabase start -x studio,edge-runtime,storage-api,imgproxy,realtime,logflare,vector,postgres-meta,supavisor`.
+
+O WebKit do Playwright não substitui um teste real no Safari/iPhone.

@@ -1,0 +1,20 @@
+{
+  "name": "patotas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:unit": "node --test \"tests/unit/*.test.js\"",
+    "test:db": "node --test \"tests/db/*.test.js\"",
+    "test:e2e": "playwright test",
+    "check": "node scripts/check-syntax.mjs",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "vendor": "node scripts/vendor-supabase.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@supabase/supabase-js": "^2.118.0",
+    "supabase": "^2.122.0"
+  }
+}
