@@ -33,6 +33,13 @@ test('versões de index.html e service worker estão alinhadas', () => {
 test('service worker ignora outras origens (Supabase)', () => {
   assert.match(sw, /origin !== self\.location\.origin\) return/);
 });
+test('erros usam a notificação do app, sem alert nativo', () => {
+  assert.doesNotMatch(js, /\balert\(/);
+  assert.match(css, /#toast\.error/);
+});
+test('painel de login não tem largura máxima própria', () => {
+  assert.doesNotMatch(css, /\.auth-panel\{[^}]*max-width/);
+});
 test('config.js não contém service_role', () => {
   assert.doesNotMatch(read('config.js'), /service_role/i);
 });

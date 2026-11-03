@@ -56,7 +56,7 @@ async function refresh() {
 async function guard(fn) {
   if (state.busy) return;
   state.busy = true;
-  try { await fn(); } catch (e) { alert(e.message || 'Não foi possível salvar'); } finally { state.busy = false; }
+  try { await fn(); } catch (e) { notify(e.message || 'Não foi possível salvar', 'error'); } finally { state.busy = false; }
 }
 
 /* ---------- Telas de membro, mensalidade e multa ---------- */
@@ -121,7 +121,7 @@ async function copySourceChange() {
   await copyPreviewFor(month.value);
 }
 async function copyPreviewFor(source) {
-  try { copyPreview(source ? await state.repo.listMemberNames(source) : []); } catch (e) { alert(e.message); }
+  try { copyPreview(source ? await state.repo.listMemberNames(source) : []); } catch (e) { notify(e.message, 'error'); }
 }
 async function copyModal() {
   state.copySources = await state.repo.listSourceMonths(state.month);
@@ -132,10 +132,14 @@ async function copyModal() {
 
 /* ---------- Compartilhar ---------- */
 let toastTimer = 0, copyTimer = 0;
-function notify(message) {
+function notify(message, kind = 'info') {
   const toast = document.getElementById('toast'); if (!toast) return;
-  clearTimeout(toastTimer); toast.textContent = message; toast.classList.add('show');
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+  clearTimeout(toastTimer);
+  toast.textContent = message;
+  toast.classList.toggle('error', kind === 'error');
+  toast.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+  toast.classList.add('show');
+  toastTimer = setTimeout(() => toast.classList.remove('show'), kind === 'error' ? 5000 : 3000);
 }
 async function shareDues() {
   const value = duesText(state.data.members, state.month);
@@ -188,10 +192,19 @@ function showLogin(note = '') {
     '<label class="form-label" for="authPassword">Senha</label><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required>' +
     '<button class="action" type="submit">Entrar</button><button class="action outline" type="button" data-act="signup">Criar conta</button><button class="action outline" type="button" data-act="forgot">Esqueci a senha</button></form>';
 }
+function showSignup(email = '') {
+  close(); applyChrome();
+  document.querySelector('.month-bar').hidden = true; $('#logout').hidden = true;
+  $('#view').innerHTML = '<form id="signupForm" class="panel auth-panel" novalidate><h2>Criar conta</h2>' +
+    '<label class="form-label" for="signupEmail">E-mail</label><input id="signupEmail" name="email" type="email" autocomplete="email" inputmode="email" required value="' + esc(email) + '">' +
+    '<label class="form-label" for="signupPassword">Senha (mín. 8 caracteres)</label><input id="signupPassword" name="password" type="password" autocomplete="new-password" minlength="8" required>' +
+    '<label class="form-label" for="signupConfirm">Confirmar senha</label><input id="signupConfirm" name="confirm" type="password" autocomplete="new-password" minlength="8" required>' +
+    '<button class="action" type="submit">Criar conta</button><button class="action outline" type="button" data-act="login">Já tenho conta</button></form>';
+}
 function showRecovery() {
   state.recovering = true; applyChrome();
   document.querySelector('.month-bar').hidden = true; $('#logout').hidden = true;
-  $('#view').innerHTML = '<form id="recoveryForm" class="panel auth-panel"><h2>Nova senha</h2><label class="form-label" for="newPassword">Nova senha (mín. 8 caracteres)</label><input id="newPassword" name="password" type="password" autocomplete="new-password" minlength="8" required><button class="action" type="submit">Salvar senha</button></form>';
+  $('#view').innerHTML = '<form id="recoveryForm" class="panel auth-panel"><h2>Nova senha</h2><label class="form-label" for="newPassword">Nova senha (mín. 8 caracteres)</label><input id="newPassword" name="password" type="password" autocomplete="new-password" minlength="8" required><label class="form-label" for="newPasswordConfirm">Confirmar nova senha</label><input id="newPasswordConfirm" name="confirm" type="password" autocomplete="new-password" minlength="8" required><button class="action" type="submit">Salvar senha</button></form>';
 }
 function credentials() {
   const f = document.getElementById('loginForm');
@@ -222,13 +235,8 @@ async function act(raw) {
   if (type === 'shareDues') return shareDues();
   if (type === 'logout') return state.client.auth.signOut();
   if (type === 'reload') return location.reload();
-  if (type === 'signup') return guard(async () => {
-    const { email, password } = credentials();
-    if (!email || password.length < 8) throw new Error('Informe e-mail e uma senha com pelo menos 8 caracteres');
-    const { error } = await state.client.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } });
-    if (error) throw authError(error);
-    showLogin('Se o e-mail puder ser cadastrado, enviamos um link de confirmação. Confirme e depois entre.');
-  });
+  if (type === 'signup') return showSignup(credentials().email);
+  if (type === 'login') return showLogin();
   if (type === 'forgot') return guard(async () => {
     const { email } = credentials();
     if (!email) throw new Error('Informe o e-mail para receber o link de nova senha');
@@ -259,7 +267,7 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'newExempt') document.getElementById('newDueFields').hidden = t.checked;
-  if (t.name === 'month' && t.closest('#monthSettingsForm')) refreshMonthFields().catch(err => alert(err.message));
+  if (t.name === 'month' && t.closest('#monthSettingsForm')) refreshMonthFields().catch(err => notify(err.message, 'error'));
   if (t.id === 'usesFines') document.getElementById('fineSettings').hidden = !t.checked;
   if (t.id === 'copyYear') copySourceChange();
   if (t.id === 'copyMonth') copyPreviewFor(t.value);
@@ -275,6 +283,11 @@ document.addEventListener('input', e => {
   if (e.target.id === 'search') { state.filter = e.target.value; $('#memberRows').innerHTML = rows(state.data.members.filter(x => x.name.toLowerCase().includes(state.filter.toLowerCase()))); }
 });
 
+function checkNewPassword(password, confirm) {
+  if (String(password || '').length < 8) throw new Error('A senha precisa ter pelo menos 8 caracteres');
+  if (password !== confirm) throw new Error('As senhas não conferem');
+}
+
 const submitters = {
   async loginForm() {
     const { email, password } = credentials();
@@ -282,8 +295,16 @@ const submitters = {
     const { error } = await state.client.auth.signInWithPassword({ email, password });
     if (error) throw authError(error);
   },
+  async signupForm(data) {
+    const email = String(data.email || '').trim(), password = String(data.password || '');
+    if (!email) throw new Error('Informe o e-mail');
+    checkNewPassword(password, data.confirm);
+    const { error } = await state.client.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } });
+    if (error) throw authError(error);
+    showLogin('Se o e-mail puder ser cadastrado, enviamos um link de confirmação. Confirme e depois entre.');
+  },
   async recoveryForm(data) {
-    if (String(data.password || '').length < 8) throw new Error('A senha precisa ter pelo menos 8 caracteres');
+    checkNewPassword(data.password, data.confirm);
     const { error } = await state.client.auth.updateUser({ password: data.password });
     if (error) throw authError(error);
     state.recovering = false;
@@ -336,7 +357,7 @@ $('#themeToggle').onclick = () => {
   state.repo?.saveTheme(state.theme).catch(console.warn);
 };
 $('#logout').onclick = () => state.client.auth.signOut();
-const go = n => { state.month = next(state.month, n); state.filter = ''; applyChrome(); refresh().catch(e => alert(e.message)); };
+const go = n => { state.month = next(state.month, n); state.filter = ''; applyChrome(); refresh().catch(e => notify(e.message, 'error')); };
 $('#prevMonth').onclick = () => go(-1);
 $('#nextMonth').onclick = () => go(1);
 $('#selectMonth').onclick = monthPicker;

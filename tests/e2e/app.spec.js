@@ -23,12 +23,11 @@ test('fumaça: sem sessão mostra o login, sem lista de membros e sem tela em br
 
 test('login inválido mostra erro; login válido abre a lista; sair volta ao login', async ({ page, user }) => {
   await page.goto('/');
-  const messages = [];
-  page.on('dialog', d => messages.push(d.message()));
   await page.fill('#authEmail', user.email);
   await page.fill('#authPassword', 'senha-errada-123');
   await page.click('#loginForm button[type=submit]');
-  await expect.poll(() => messages.join('|')).toMatch(/incorretos/);
+  await expect(page.locator('#toast')).toContainText('E-mail ou senha incorretos');
+  await expect(page.locator('#toast')).toHaveAttribute('role', 'alert');
   await page.fill('#authPassword', user.password);
   await page.click('#loginForm button[type=submit]');
   await expect(page.locator('#selectMonth')).toContainText('Outubro');
@@ -62,11 +61,10 @@ test('fluxo completo: membro, mensalidade, multa, histórico e competências ind
   // Mensalidade: valor > 0 obrigatório
   await open(page, 'Carlos');
   await page.click('[data-act^="due:"]');
-  const msgs = [];
-  page.on('dialog', d => msgs.push(d.message()));
   await page.fill('#dueForm [name="amount"]', '0');
   await page.click('#dueForm button[type=submit]');
-  await expect.poll(() => msgs.join('|')).toMatch(/maior que zero/);
+  await expect(page.locator('#toast')).toContainText('maior que zero');
+  await expect(page.locator('#dueForm')).toBeVisible();
   await page.fill('#dueForm [name="amount"]', '60,50');
   await page.fill('#dueForm [name="paidAt"]', '2026-09-28'); // antecipado
   await page.click('#dueForm button[type=submit]');
@@ -195,4 +193,22 @@ test('responsividade: modal rola e campos de data cabem na tela', async ({ page,
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(vw);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test('login: painel ocupa a largura inteira, igual aos demais blocos', async ({ page }) => {
+  await page.goto('/');
+  const panel = await page.locator('#loginForm').boundingBox();
+  const view = await page.locator('#view').boundingBox();
+  expect(Math.abs(panel.width - view.width)).toBeLessThanOrEqual(1);
+});
+
+test('erros aparecem como notificação do app, sem alert nativo', async ({ page, user }) => {
+  let native = 0;
+  page.on('dialog', () => native++);
+  await page.goto('/');
+  await page.fill('#authEmail', user.email);
+  await page.fill('#authPassword', 'senha-errada-123');
+  await page.click('#loginForm button[type=submit]');
+  await expect(page.locator('#toast.show.error')).toBeVisible();
+  expect(native).toBe(0);
 });

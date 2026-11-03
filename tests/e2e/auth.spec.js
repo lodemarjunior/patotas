@@ -20,23 +20,32 @@ async function linkFor(email, subjectPart) {
 test.describe('conta por e-mail e senha', () => {
   test('criar conta exige confirmação por e-mail antes de entrar', async ({ page }) => {
     const email = `novo-${Date.now()}@example.test`;
-    const messages = [];
-    page.on('dialog', d => messages.push(d.message()));
     await page.goto('/');
     await page.fill('#authEmail', email);
-    await page.fill('#authPassword', 'curta');
     await page.click('[data-act="signup"]');
-    await expect.poll(() => messages.join('|')).toMatch(/8 caracteres/);
+    await expect(page.locator('#signupForm')).toBeVisible();
+    await expect(page.locator('#signupEmail')).toHaveValue(email);
 
-    await page.fill('#authPassword', 'senha-segura-123');
-    await page.click('[data-act="signup"]');
+    await page.fill('#signupPassword', 'curta');
+    await page.fill('#signupConfirm', 'curta');
+    await page.click('#signupForm button[type=submit]');
+    await expect(page.locator('#toast')).toContainText('8 caracteres');
+
+    await page.fill('#signupPassword', 'senha-segura-123');
+    await page.fill('#signupConfirm', 'senha-diferente-1');
+    await page.click('#signupForm button[type=submit]');
+    await expect(page.locator('#toast')).toContainText('As senhas não conferem');
+    await expect(page.locator('#signupForm')).toBeVisible();
+
+    await page.fill('#signupConfirm', 'senha-segura-123');
+    await page.click('#signupForm button[type=submit]');
     await expect(page.locator('#authNote')).toContainText('link de confirmação');
 
     // Sem confirmar, o login é recusado
     await page.fill('#authEmail', email);
     await page.fill('#authPassword', 'senha-segura-123');
     await page.click('#loginForm button[type=submit]');
-    await expect.poll(() => messages.join('|')).toMatch(/Confirme seu e-mail/);
+    await expect(page.locator('#toast')).toContainText('Confirme seu e-mail');
 
     // Após confirmar pelo link, entra direto
     await page.goto(await linkFor(email, 'confirm'));
@@ -53,6 +62,10 @@ test.describe('conta por e-mail e senha', () => {
     await page.goto(await linkFor(user.email, 'reset'));
     await expect(page.locator('#recoveryForm')).toBeVisible();
     await page.fill('#newPassword', 'nova-senha-456');
+    await page.fill('#newPasswordConfirm', 'outra-senha-789');
+    await page.click('#recoveryForm button[type=submit]');
+    await expect(page.locator('#toast')).toContainText('As senhas não conferem');
+    await page.fill('#newPasswordConfirm', 'nova-senha-456');
     await page.click('#recoveryForm button[type=submit]');
     await expect(page.locator('#selectMonth')).toContainText('Outubro');
 
@@ -62,4 +75,11 @@ test.describe('conta por e-mail e senha', () => {
     await page.click('#loginForm button[type=submit]');
     await expect(page.locator('#selectMonth')).toContainText('Outubro');
   });
+});
+
+test('voltar do cadastro para o login', async ({ page }) => {
+  await page.goto('/');
+  await page.click('[data-act="signup"]');
+  await page.click('[data-act="login"]');
+  await expect(page.locator('#loginForm')).toBeVisible();
 });
