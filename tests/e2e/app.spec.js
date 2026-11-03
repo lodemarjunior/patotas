@@ -212,3 +212,39 @@ test('erros aparecem como notificação do app, sem alert nativo', async ({ page
   await expect(page.locator('#toast.show.error')).toBeVisible();
   expect(native).toBe(0);
 });
+
+// Luminância relativa (WCAG) de uma cor "rgb(a)(r, g, b)".
+const lum = c => {
+  const [r, g, b] = c.match(/[\d.]+/g).slice(0, 3).map(Number).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+
+for (const theme of ['light', 'dark']) {
+  test(`copiar membros (${theme}): opções do mês legíveis e scrollbars no estilo do app`, async ({ page, user }) => {
+    await login(page, user);
+    await month(page, 'prev');
+    await addMember(page, 'Ana');
+    await month(page, 'prev');
+    await addMember(page, 'Bia');
+    await month(page, 'next');
+    await month(page, 'next');
+    const isDark = await page.evaluate(() => document.body.classList.contains('theme-dark'));
+    if ((theme === 'dark') !== isDark) await page.click('#themeToggle');
+    await page.click('[data-act="copy"]');
+    await expect(page.locator('#copyMonth option')).toHaveCount(2);
+
+    // Cada opção (selecionada ou não) precisa de contraste legível
+    const styles = await page.locator('#copyMonth option').evaluateAll(os => os.map(o => { const s = getComputedStyle(o); return { color: s.color, bg: s.backgroundColor }; }));
+    for (const s of styles) expect(contrast(s.color, s.bg), JSON.stringify(s)).toBeGreaterThanOrEqual(4.5);
+
+    // Scrollbars finas e com a cor do tema (não as padrão do navegador)
+    const bars = await page.evaluate(() => [document.documentElement, document.querySelector('.modal')].map(el => { const s = getComputedStyle(el); return { width: s.scrollbarWidth, color: s.scrollbarColor, scheme: s.colorScheme }; }));
+    for (const b of bars) {
+      expect(b.width).toBe('thin');
+      expect(b.color).not.toBe('auto');
+      expect(b.scheme).toContain(theme);
+    }
+    expect(await page.evaluate(() => document.documentElement.classList.contains('theme-dark'))).toBe(theme === 'dark');
+  });
+}

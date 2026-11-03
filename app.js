@@ -17,7 +17,7 @@ const pill = (d, m) => { const s = status(d, m), cls = d ? 'paid' : s === 'Atras
 const action = (text, act, cls = '') => '<button class="action ' + cls + '" data-act="' + act + '">' + text + '</button>';
 
 function applyChrome() {
-  document.body.classList.toggle('theme-dark', state.theme === 'dark');
+  for (const el of [document.documentElement, document.body]) el.classList.toggle('theme-dark', state.theme === 'dark');
   $('#themeToggle').textContent = state.theme === 'dark' ? '☀' : '☾';
   $('#selectMonth').textContent = label(state.month).replace(/^./, c => c.toUpperCase());
 }

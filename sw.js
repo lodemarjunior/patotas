@@ -1,5 +1,5 @@
-const CACHE = 'patotas-pwa-v28';
-const ASSETS = ['./', './index.html', './styles.css', './app.js', './styles.css?v=28', './app.js?v=28', './config.js', './src/core.js', './src/repo.js', './vendor/supabase.js?v=28', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png'];
+const CACHE = 'patotas-pwa-v29';
+const ASSETS = ['./', './index.html', './styles.css', './app.js', './styles.css?v=29', './app.js?v=29', './config.js', './src/core.js', './src/repo.js', './vendor/supabase.js?v=29', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png'];
 self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', event => { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', event => { if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;

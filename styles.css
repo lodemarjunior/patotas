@@ -358,3 +358,10 @@ body{box-sizing:border-box}
 [hidden]{display:none!important}
 #toast.error{background:#ffe8e9;color:#7d1e22;border-color:rgba(190,63,66,.45)}
 .theme-dark #toast.error{background:rgba(68,39,47,.95);color:#ffd9db;border-color:rgba(255,119,123,.45)}
+:root{color-scheme:light;--scroll-thumb:rgba(23,33,54,.28)}
+.theme-dark{color-scheme:dark;--scroll-thumb:rgba(164,173,192,.38)}
+html,body,.modal,#memberRows,textarea,select{scrollbar-width:thin;scrollbar-color:var(--scroll-thumb) transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--scroll-thumb);border-radius:10px;border:2px solid transparent;background-clip:content-box}
+select option{background:var(--bg);color:var(--ink)}
